@@ -12,8 +12,11 @@
 npm install
 npm run build
 cp .env.example .env   # 按需填写 DATABASE_URL / REDIS_URL / GITHUB_* / 模型配置
+# ⚠️ .env 含明文密钥，已被 .gitignore 忽略，切勿提交到仓库。
 node scripts/migrate.mjs
 ```
+
+> 首次安装用 `npm install`；验证 / CI 用 `npm ci`（干净、可复现，见下）。
 
 本地起服务（各占一个终端）：
 
@@ -28,13 +31,13 @@ cd apps/web && npm install && npm run dev   # Web（独立 workspace，端口 51
 ## 提交前自检
 
 ```bash
-npm run typecheck   # 全 workspace 类型检查
-npm run test        # build 后运行 vitest（DB 集成测试在未配置 APERTUREPRISM_INTEGRATION_DATABASE_URL 时自动跳过）
-npm run lint        # ESLint
-npm run format      # Prettier 统一格式
+npm run typecheck     # 全 workspace 类型检查
+npm run test          # 先 build 再跑 vitest（DB 集成测试在未配置 APERTUREPRISM_INTEGRATION_DATABASE_URL 时自动跳过）
+npm run lint          # ESLint
+npm run format:check  # Prettier 校验；直接格式化用 npm run format
 ```
 
-`apps/web` 是独立 workspace，单独验证：
+`apps/web` 是独立 workspace（有独立 `package-lock.json`），单独验证：
 
 ```bash
 cd apps/web && npm ci && npm run typecheck && npm test
@@ -59,6 +62,10 @@ cd apps/web && npm ci && npm run typecheck && npm test
 - [ ] 描述清楚「问题是什么、改了什么、怎么验证」
 - [ ] 涉及行为变更时补充/更新单测
 - [ ] `npm run typecheck` 通过
+- [ ] `npm run test` 通过
+- [ ] `npm run lint` 通过
+- [ ] `npm run format:check` 通过
+- [ ] `apps/web`（若改动前端）`npm run typecheck && npm test` 通过
 - [ ] 相关文档（README / docs）同步更新
 
 ## 参考
