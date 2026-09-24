@@ -24,7 +24,11 @@ async function getJson(url: string): Promise<unknown> {
   const hit = responseCache.get(key);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.data;
   const data = await fetchJson(url);
-  responseCache.set(key, { at: Date.now(), data });
+  // 飞行中的请求可能在 await 期间遇到写操作（bumpCache 清空缓存 + 版本号递增）。
+  // 此时当前 cacheKey 已不是本请求的旧键，写回会留下孤儿条目；仅当版本未变时才缓存。
+  if (cacheKey(url) === key) {
+    responseCache.set(key, { at: Date.now(), data });
+  }
   // 防止缓存无限增长
   if (responseCache.size > 100) {
     for (const [k, v] of responseCache) {
